@@ -1,0 +1,4 @@
+body { font-family: system-ui, sans-serif; margin: 0; padding: 2rem; background: #f7f7fb; }
+.app { max-width: 720px; margin: 0 auto; background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 6px 20px rgba(16,24,40,0.08);} 
+button { padding: 0.5rem 1rem; border-radius: 6px; border: none; background: #0b5fff; color: white; cursor: pointer; }
+button:hover { opacity: 0.95 }
