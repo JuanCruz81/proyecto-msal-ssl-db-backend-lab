@@ -55,12 +55,33 @@ app.get('/api/users/:id', (req, res) => {
   })
 })
 
+// Endpoint para Liveness (Saber si el proceso sigue vivo)
+app.get('/healthz', (req, res) => {
+    res.status(200).json({ status: 'OK', timestamp: new Date() })
+})
+
+// Endpoint para Readiness (Saber si ya puede recibir tráfico / consultas de red)
+app.get('/ready', (req, res) => {
+    // Validamos si la conexión a la base de datos está activa ejecutando una consulta simple
+    db.get('SELECT 1', (err) => {
+        if (err) {
+            // Si la base de datos falla, devolvemos un código 500 para que K8s detenga el tráfico a este Pod
+            return res.status(500).json({ status: 'ERROR', message: 'Database connection failed' })
+        }
+        res.status(200).json({ status: 'READY' })
+    })
+})
+
 // Attempt to start HTTPS server using certs/localhost-*.pem
 try {
   // certs are placed at project root ./certs; server CWD is server/, so go up one level
-  const key = fs.readFileSync(path.join(__dirname, '..', 'certs', 'localhost-key.pem'))
-  const cert = fs.readFileSync(path.join(__dirname, '..', 'certs', 'localhost-cert.pem'))
-  https.createServer({ key, cert }, app).listen(PORT, () => {
+  // const key = fs.readFileSync(path.join(__dirname, '..', 'certs', 'localhost-key.pem'))
+  // const cert = fs.readFileSync(path.join(__dirname, '..', 'certs', 'localhost-cert.pem'))
+
+    const key = fs.readFileSync(path.join(__dirname, '..', 'key.pem'))
+    const cert = fs.readFileSync(path.join(__dirname, '..', 'cert.pem'))
+
+    https.createServer({ key, cert }, app).listen(PORT, () => {
     console.log(`Auth backend listening (HTTPS) on port ${PORT}`)
   })
 } catch (e) {
