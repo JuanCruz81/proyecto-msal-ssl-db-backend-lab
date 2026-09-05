@@ -2,6 +2,8 @@ import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Shield, Search, X } from 'lucide-react';
 import { ROLES_SISTEMA } from './constants';
+import { butSupDer, // popup, 
+  footCan, footSav } from './styles';
 
 export default function AsignarRolesVista() {
   const [isOpen, setIsOpen] = useState(false);
@@ -11,6 +13,8 @@ export default function AsignarRolesVista() {
 
   const buttonRef = useRef(null);
   const popupRef = useRef(null);
+
+  const API_URL = import.meta.env.VITE_API_URL;
 
   // Calcular la posición física exacta en la pantalla al hacer clic
   const handleToggle = () => {
@@ -54,9 +58,47 @@ export default function AsignarRolesVista() {
     setSelectedRoles(prev => ({ ...prev, [roleId]: !prev[roleId] }));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const asignados = Object.keys(selectedRoles).filter(id => selectedRoles[id]);
     console.log("Roles seleccionados:", asignados);
+
+    // Opcional: Validar que haya seleccionado al menos uno si es obligatorio
+    if (asignados.length === 0) {
+      alert("Por favor, selecciona al menos un rol.");
+      return;
+    }
+
+    try {
+      // 2. Realizar la llamada a tu endpoint de Node.js
+      const response = await fetch(`${API_URL}/usuarios/roles`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          // 'Authorization': `Bearer ${token}` // Si usas tokens de autenticación
+        },
+        body: JSON.stringify({
+          usuarioId: 123, // Reemplaza por el ID dinámico del usuario que estás editando
+          roles: asignados // Enviamos el arreglo ['role-1', 'role-1-1', ...]
+        }),
+      });
+
+      // 3. Verificar si el servidor respondió con un estatus de éxito
+      if (!response.ok) {
+        throw new Error('Error en el servidor al intentar guardar los roles.');
+      }
+
+      const data = await response.json();
+      console.log("Guardado con éxito en el backend:", data);
+
+      // 4. Si todo salió bien, cerramos el modal (tu lógica original)
+      // setIsOpen(false);
+
+    } catch (error) {
+      // 5. Capturar fallos de red o errores lanzados en el bloque try
+      console.error("Error al conectar con la API:", error);
+      alert("No se pudieron guardar los cambios. Inténtalo de nuevo.");
+    }
+
     setIsOpen(false);
   };
 
@@ -68,18 +110,7 @@ export default function AsignarRolesVista() {
         <button
           ref={buttonRef}
           onClick={handleToggle}
-          style={{
-            padding: '12px',
-            backgroundColor: '#4f46e5',
-            color: '#ffffff',
-            borderRadius: '9999px',
-            border: 'none',
-            boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}
+          style={butSupDer}
           title="Asignar Roles"
         >
           <Shield style={{ width: '24px', height: '24px' }} />
@@ -96,22 +127,24 @@ export default function AsignarRolesVista() {
       {isOpen && createPortal(
         <div
           ref={popupRef}
-          style={{
-            position: 'absolute',
-            top: `${coords.top}px`,
-            left: `${coords.left}px`,
-            width: '360px',
-            backgroundColor: '#ffffff',
-            borderRadius: '12px',
-            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-            border: '1px solid #e5e7eb',
-            display: 'flex',
-            flexDirection: 'column',
-            maxHeight: '450px',
-            overflow: 'hidden',
-            fontFamily: 'sans-serif',
-            zIndex: 99999999 // Capa absoluta máxima en el navegador
-          }}
+          style={
+            {
+              position: 'absolute',
+              top: `${coords.top}px`,
+              left: `${coords.left}px`,
+              width: '360px',
+              backgroundColor: '#ffffff',
+              borderRadius: '12px',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+              border: '1px solid #e5e7eb',
+              display: 'flex',
+              flexDirection: 'column',
+              maxHeight: '450px',
+              overflow: 'hidden',
+              fontFamily: 'sans-serif',
+              zIndex: 99999999 // Capa absoluta máxima en el navegador
+            }
+          }
         >
           {/* Cabecera */}
           <div style={{ padding: '16px', borderBottom: '1px solid #f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'between', backgroundColor: '#f9fafb' }}>
@@ -197,32 +230,13 @@ export default function AsignarRolesVista() {
           <div style={{ padding: '12px', borderTop: '1px solid #f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '8px', backgroundColor: '#f9fafb' }}>
             <button
               onClick={() => setIsOpen(false)}
-              style={{
-                padding: '6px 12px',
-                fontSize: '11px',
-                fontWeight: 500,
-                color: '#374151',
-                backgroundColor: '#ffffff',
-                border: '1px solid #d1d5db',
-                borderRadius: '6px',
-                cursor: 'pointer'
-              }}
+              style={footCan}
             >
               Cancelar
             </button>
             <button
               onClick={handleSave}
-              style={{
-                padding: '6px 12px',
-                fontSize: '11px',
-                fontWeight: 500,
-                color: '#ffffff',
-                backgroundColor: '#4f46e5',
-                border: 'none',
-                borderRadius: '6px',
-                boxShadow: '0 1px 2px 0 rgba(0,0,0,0.05)',
-                cursor: 'pointer'
-              }}
+              style={footSav}
             >
               Guardar Cambios
             </button>
