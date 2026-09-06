@@ -1,4 +1,68 @@
-body { font-family: system-ui, sans-serif; margin: 0; padding: 2rem; background: #f7f7fb; }
-.app { max-width: 720px; margin: 0 auto; background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 6px 20px rgba(16,24,40,0.08);} 
-button { padding: 0.5rem 1rem; border-radius: 6px; border: none; background: #0b5fff; color: white; cursor: pointer; }
-button:hover { opacity: 0.95 }
+body {
+    font-family: system-ui, sans-serif;
+    margin: 0;
+    padding: 2rem;
+    background: #f7f7fb;
+}
+
+.app {
+    max-width: 720px;
+    margin: 0 auto;
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 6px 20px rgba(16, 24, 40, 0.08);
+    margin-top: 20%;
+}
+
+button {
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    border: none;
+    background: #0b5fff;
+    color: white;
+    cursor: pointer;
+}
+
+button:hover {
+    opacity: 0.95
+}
+
+/* Contenedor del formulario */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  max-width: 300px;
+  margin: 20px auto;
+  text-align: left;
+}
+
+/* Grupos que unen cada etiqueta con su input */
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+/* Etiquetas del formulario */
+.login-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333333; /* Ajusta el color según tu fondo */
+}
+
+/* Campos de texto */
+.login-input {
+  padding: 8px 12px;
+  border-radius: 4px;
+  border: 1px solid #cccccc;
+  font-size: 16px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+/* Efecto visual al hacer clic en el input */
+.login-input:focus {
+  border-color: #2563eb;
+}

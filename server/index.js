@@ -7,6 +7,11 @@ const sqlite3 = require('sqlite3').verbose()
 const app = express()
 const PORT = process.env.PORT || 4000
 
+// import fs from 'fs';
+// import path from 'path';
+
+const DATA_FILE = path.resolve('./roles_usuarios.json');
+
 app.use(cors())
 app.use(express.json())
 
@@ -55,11 +60,74 @@ app.get('/api/users/:id', (req, res) => {
   })
 })
 
+app.post('/api/v1/usuarios/roles', (req, res) => {
+  const { usuarioId, roles } = req.body;
+  const userId = Number(usuarioId);
+
+  // 1. Validaciones de los datos recibidos desde React
+  if (!userId) {
+    return res.status(400).json({ error: 'El campo usuarioId es requerido y debe ser numérico.' });
+  }
+  if (!roles || !Array.isArray(roles)) {
+    return res.status(400).json({ error: 'El campo roles debe ser un arreglo.' });
+  }
+
+  // 2. Aquí iría la lógica de persistencia de tu base de datos
+  console.log(`Actualizando roles para el usuario ${userId}:`, roles);
+
+  try {
+    // 1. Leer el archivo JSON actual (si no existe, empezamos con un objeto vacío)
+    let dbTemporal = {};
+    if (fs.existsSync(DATA_FILE)) {
+      dbTemporal = JSON.parse(fs.readFileSync(DATA_FILE, 'utf-8'));
+    }
+
+    // 2. Asignar los nuevos roles al usuario dentro del objeto
+    dbTemporal[userId] = roles;
+
+    // 3. Escribir los cambios de vuelta en el archivo de texto
+    fs.writeFileSync(DATA_FILE, JSON.stringify(dbTemporal, null, 2));
+
+    res.json({ ok: true, message: 'Data guardada localmente en archivo JSON.' });
+  } catch (err) {
+    res.status(500).json({ error: 'Error al escribir el archivo: ' + err.message });
+  }
+
+  // 3. Respuesta exitosa simulada
+  res.json({
+    ok: true,
+    message: 'Roles actualizados correctamente.',
+    totalActualizados: roles.length
+  });
+});
+
+
+// Endpoint para Liveness (Saber si el proceso sigue vivo)
+app.get('/healthz', (req, res) => {
+  res.status(200).json({ status: 'OK', timestamp: new Date() })
+})
+
+// Endpoint para Readiness (Saber si ya puede recibir tráfico / consultas de red)
+app.get('/ready', (req, res) => {
+  // Validamos si la conexión a la base de datos está activa ejecutando una consulta simple
+  db.get('SELECT 1', (err) => {
+    if (err) {
+      // Si la base de datos falla, devolvemos un código 500 para que K8s detenga el tráfico a este Pod
+      return res.status(500).json({ status: 'ERROR', message: 'Database connection failed' })
+    }
+    res.status(200).json({ status: 'READY' })
+  })
+})
+
 // Attempt to start HTTPS server using certs/localhost-*.pem
 try {
   // certs are placed at project root ./certs; server CWD is server/, so go up one level
-  const key = fs.readFileSync(path.join(__dirname, '..', 'certs', 'localhost-key.pem'))
-  const cert = fs.readFileSync(path.join(__dirname, '..', 'certs', 'localhost-cert.pem'))
+  // const key = fs.readFileSync(path.join(__dirname, '..', 'certs', 'localhost-key.pem'))
+  // const cert = fs.readFileSync(path.join(__dirname, '..', 'certs', 'localhost-cert.pem'))
+
+  const key = fs.readFileSync(path.join(__dirname, '..', 'key.pem'))
+  const cert = fs.readFileSync(path.join(__dirname, '..', 'cert.pem'))
+
   https.createServer({ key, cert }, app).listen(PORT, () => {
     console.log(`Auth backend listening (HTTPS) on port ${PORT}`)
   })
