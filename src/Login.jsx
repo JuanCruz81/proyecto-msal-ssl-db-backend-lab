@@ -2,6 +2,9 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom' // <-- Importamos el hook de navegación
 import { useMsal } from './auth/msalAdapter.jsx'
 import { loginRequest } from './authConfig'
+import { useMiContexto } from './miContexto.jsx'
+
+
 
 function SignInButton() {
   const { instance } = useMsal()
@@ -18,14 +21,16 @@ export default function Login() {
   const [password, setPassword] = useState('')
   const navigate = useNavigate() // <-- Inicializamos la navegación
 
+  const { actualizarUsername } = useMiContexto() // <-- Usamos el contexto para obtener datos compartidos
+
   const handleLocalSignIn = (e) => {
     e.preventDefault()
-    
+
     if (username.trim() !== "" && password.trim() !== "") {
       console.log("Usuario autenticado:", username)
-      
+      actualizarUsername(username);
       // REDIRECCIÓN: Cambia la URL del navegador y carga el componente Dashboard
-      navigate('/dashboard') 
+      navigate('/dashboard')
     } else {
       alert("Por favor ingresa un usuario y contraseña")
     }

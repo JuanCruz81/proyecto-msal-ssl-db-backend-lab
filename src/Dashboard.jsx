@@ -4,12 +4,16 @@ import { Shield, Search, X } from 'lucide-react';
 import { ROLES_SISTEMA } from './constants';
 import { butSupDer, // popup, 
   footCan, footSav } from './styles';
+import { useMiContexto } from './miContexto';
+import { mapearUsuarioAInteger } from './utils';
 
 export default function AsignarRolesVista() {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRoles, setSelectedRoles] = useState({});
   const [coords, setCoords] = useState({ top: 0, left: 0 });
+
+  const { datosCompartidos } = useMiContexto(); // <-- Usamos el contexto para obtener datos compartidos
 
   const buttonRef = useRef(null);
   const popupRef = useRef(null);
@@ -77,7 +81,7 @@ export default function AsignarRolesVista() {
           // 'Authorization': `Bearer ${token}` // Si usas tokens de autenticación
         },
         body: JSON.stringify({
-          usuarioId: 123, // Reemplaza por el ID dinámico del usuario que estás editando
+          usuarioId: mapearUsuarioAInteger(datosCompartidos.username), // Reemplaza por el ID dinámico del usuario que estás editando
           roles: asignados // Enviamos el arreglo ['role-1', 'role-1-1', ...]
         }),
       });
