@@ -2,10 +2,14 @@ import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Shield, Search, X } from 'lucide-react';
 import { ROLES_SISTEMA } from './constants';
-import { butSupDer, // popup, 
-  footCan, footSav } from './styles';
+import {
+  butSupDer, // popup, 
+  footCan, footSav
+} from './styles';
 import { useMiContexto } from './miContexto';
 import { mapearUsuarioAInteger } from './utils';
+
+const usuarioActivo = { username: 'alice' };
 
 export default function AsignarRolesVista() {
   const [isOpen, setIsOpen] = useState(false);
@@ -51,6 +55,32 @@ export default function AsignarRolesVista() {
     }
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isOpen]);
+
+  useEffect(() => {
+    if (!usuarioActivo) {
+      setSelectedRoles({});
+      return;
+    }
+
+    // 1. Crear un objeto vacío para armar el mapa de seleccionados
+    const rolesPreseleccionados = {};
+
+    // 2. Recorrer la lista global de roles del sistema
+    ROLES_SISTEMA.forEach((role) => {
+      // Verificamos si el username del usuario activo está incluido en este rol
+      // Ignoramos mayúsculas/minúsculas para evitar fallos de formato
+      const tieneElRol = role.usernames?.some(
+        (user) => user.toLowerCase() === usuarioActivo.username.toLowerCase()
+      );
+
+      if (tieneElRol) {
+        rolesPreseleccionados[role.id] = true; // Lo marcamos como seleccionado
+      }
+    });
+
+    // 3. Guardar el objeto en el estado para que React pinte los checkboxes activados
+    setSelectedRoles(rolesPreseleccionados);
+  }, [usuarioActivo]);
 
   const filteredRoles = useMemo(() => {
     return ROLES_SISTEMA.filter(role =>
