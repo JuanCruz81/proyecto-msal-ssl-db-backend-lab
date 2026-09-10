@@ -5,8 +5,10 @@ const express = require('express')
 const cors = require('cors')
 // 1. Importamos el cliente de Supabase y dotenv
 const { createClient } = require('@supabase/supabase-js')
-require('dotenv').config()
+const { Server } = require('socket.io')
+const { sendNotification } = require('./botHelper.js')
 
+// Especificamos la ruta correcta al archivo .env directamente
 require('dotenv').config({ path: path.resolve(__dirname, '../.env') })
 
 const app = express()
@@ -22,10 +24,11 @@ const supabase = createClient(supabaseUrl, supabaseKey)
 
 console.log('Conectado exitosamente al cliente de Supabase')
 
+let io
+
 // OBTENER TODOS LOS USUARIOS
 app.get('/api/users', async (req, res) => {
   try {
-    // Reemplaza 'users' por el nombre exacto de tu tabla en Supabase
     const { data, error } = await supabase
       .from('users')
       .select('username, name, email')
@@ -40,13 +43,13 @@ app.get('/api/users', async (req, res) => {
 // OBTENER UN USUARIO POR ID
 app.get('/api/users/:id', async (req, res) => {
   const id = Number(req.params.id)
-  
+
   try {
     const { data, error } = await supabase
       .from('users')
       .select('id, username, name, email')
       .eq('id', id)
-      .single() // Trae un solo objeto en vez de un arreglo
+      .single()
 
     if (error) {
       if (error.code === 'PGRST116') return res.status(404).json({ error: 'User not found' })
@@ -72,19 +75,19 @@ app.post('/api/v1/usuarios/roles', async (req, res) => {
   }
 
   try {
-    // Insertamos o actualizamos los roles en tu tabla de Supabase.
-    // .upsert() inserta si no existe el id, o lo actualiza si ya existe.
-    // Nota: Tu tabla en Supabase debe llamarse 'roles_usuarios' (o como prefieras) y tener las columnas 'user_id' y 'roles'.
     const { data, error } = await supabase
-      .from('roles_usuarios') 
+      .from('roles_usuarios')
       .upsert({ user_id: userId, roles: roles })
       .select()
 
     if (error) throw error
 
+    // 💡 CORRECCIÓN CRÍTICA: Disparar la notificación cuando ocurra un cambio real
+    await sendNotification(userId, roles);
+
     res.json({
       ok: true,
-      message: 'Roles actualizados correctamente en Supabase.',
+      message: 'Roles actualizados correctamente en Supabase y notificación enviada.',
       totalActualizados: roles.length,
       data: data
     });
@@ -94,15 +97,14 @@ app.post('/api/v1/usuarios/roles', async (req, res) => {
   }
 });
 
-// Endpoint para Liveness (Saber si el proceso sigue vivo)
+// Endpoint para Liveness
 app.get('/healthz', (req, res) => {
   res.status(200).json({ status: 'OK', timestamp: new Date() })
 })
 
-// Endpoint para Readiness (Modificado para validar Supabase)
+// Endpoint para Readiness
 app.get('/ready', async (req, res) => {
   try {
-    // Hacemos una consulta rápida a cualquier tabla o una función del sistema para verificar la conexión
     const { error } = await supabase.from('users').select('id').limit(1)
     if (error) throw error
 
@@ -112,17 +114,89 @@ app.get('/ready', async (req, res) => {
   }
 })
 
-// Servidor HTTPS / HTTP Fallback (Mantenemos tu lógica intacta)
+app.get("/card", (req, res) => {
+  const card = {
+    type: "AdaptiveCard",
+    version: "1.4",
+    body: [
+      { type: "TextBlock", size: "Large", weight: "Bolder", text: "Pedido aprobado" },
+      { type: "TextBlock", text: "El pedido #1234 fue aprobado." }
+    ]
+  };
+  res.json(card);
+});
+
+app.post('/api/teams/send', (req, res) => {
+  const { title, message } = req.body
+
+  const card = {
+    type: 'AdaptiveCard',
+    version: '1.4',
+    body: [
+      { type: 'TextBlock', size: 'Large', weight: 'Bolder', text: title || 'Notificación' },
+      { type: 'TextBlock', text: message || '' }
+    ]
+  }
+
+  if (io) {
+    io.emit('teams-notification', card)
+  }
+
+  res.json({ success: true, sent: true })
+})
+
+// ENDPOINT EXCLUSIVO PARA PROBAR EL ENVÍO DEL WEBHOOK
+app.post('/api/v1/test-notification', async (req, res) => {
+  try {
+    const usuarioId = req.body.usuarioId || 999;
+    const roles = req.body.roles || ['Admin_Test', 'Moderador_Test'];
+
+    console.log(`Iniciando prueba de notificación para el usuario: ${usuarioId}`);
+
+    await sendNotification(usuarioId, roles);
+
+    res.json({
+      success: true,
+      message: 'Petición de prueba procesada. Verifica tu canal de chat.',
+      datos_enviados: { usuarioId, roles }
+    });
+  } catch (err) {
+    console.error('Error en el endpoint de pruebas:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Servidor HTTPS / HTTP Fallback
 try {
   const key = fs.readFileSync(path.join(__dirname, '..', 'key.pem'))
   const cert = fs.readFileSync(path.join(__dirname, '..', 'cert.pem'))
 
-  https.createServer({ key, cert }, app).listen(PORT, () => {
+  const server = https.createServer({ key, cert }, app)
+
+  io = new Server(server, {
+    cors: { origin: '*' }
+  })
+
+  io.on('connection', socket => {
+    console.log('Cliente conectado (HTTPS):', socket.id)
+  })
+
+  server.listen(PORT, () => {
     console.log(`Auth backend listening (HTTPS) on port ${PORT}`)
   })
 } catch (e) {
   console.warn('Failed to start HTTPS server, falling back to HTTP:', e.message)
-  app.listen(PORT, () => {
+  
+  // 💡 OPTIMIZACIÓN: Inicializar HTTP Server de Express adjuntando Socket.io en el fallback
+  const httpServer = app.listen(PORT, () => {
     console.log(`Auth backend listening (HTTP) on port ${PORT}`)
+  })
+
+  io = new Server(httpServer, {
+    cors: { origin: '*' }
+  })
+
+  io.on('connection', socket => {
+    console.log('Cliente conectado (HTTP):', socket.id)
   })
 }
