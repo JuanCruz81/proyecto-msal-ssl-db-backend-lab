@@ -6,7 +6,7 @@ const cors = require('cors')
 // 1. Importamos el cliente de Supabase y dotenv
 const { createClient } = require('@supabase/supabase-js')
 const { Server } = require('socket.io')
-const { sendNotification } = require('./botHelper.js')
+const { notifyDiscord } = require('./botHelper.js')
 
 // Especificamos la ruta correcta al archivo .env directamente
 require('dotenv').config({ path: path.resolve(__dirname, '../.env') })
@@ -153,7 +153,7 @@ app.post('/api/v1/test-notification', async (req, res) => {
 
     console.log(`Iniciando prueba de notificación para el usuario: ${usuarioId}`);
 
-    await sendNotification(usuarioId, roles);
+    await notifyDiscord(usuarioId, roles);
 
     res.json({
       success: true,
