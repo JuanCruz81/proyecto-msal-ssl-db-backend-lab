@@ -67,3 +67,64 @@ export const footSav = {
     boxShadow: '0 1px 2px 0 rgba(0,0,0,0.05)',
     cursor: 'pointer'
 }
+
+// Agrega esta constante en tu archivo Dashboard.jsx para alimentar los estilos del formulario
+export const styles = {
+  card: { 
+    maxWidth: '450px', 
+    margin: '40px auto', 
+    padding: '24px', 
+    borderRadius: '8px', 
+    border: '1px solid #e0e0e0', 
+    boxShadow: '0 4px 12px rgba(0,0,0,0.05)', 
+    fontFamily: 'system-ui, sans-serif',
+    backgroundColor: '#ffffff'
+  },
+  title: { 
+    margin: '0 0 20px 0', 
+    fontSize: '20px', 
+    color: '#202124', 
+    textAlign: 'center' 
+  },
+  form: { 
+    display: 'flex', 
+    flexDirection: 'column', 
+    gap: '16px' 
+  },
+  group: { 
+    display: 'flex', 
+    flexDirection: 'column', 
+    gap: '6px' 
+  },
+  label: { 
+    fontSize: '14px', 
+    fontWeight: '500', 
+    color: '#5f6368',
+    textAlign: 'left'
+  },
+  input: { 
+    padding: '10px', 
+    fontSize: '15px', 
+    borderRadius: '4px', 
+    border: '1px solid #dadce0', 
+    outline: 'none' 
+  },
+  button: { 
+    padding: '12px', 
+    fontSize: '15px', 
+    fontWeight: '600', 
+    color: '#fff', 
+    backgroundColor: '#1a73e8', 
+    border: 'none', 
+    borderRadius: '4px', 
+    cursor: 'pointer' 
+  },
+  alert: { 
+    marginTop: '20px', 
+    padding: '12px', 
+    borderRadius: '4px', 
+    fontSize: '14px', 
+    textAlign: 'center', 
+    fontWeight: '500' 
+  }
+};

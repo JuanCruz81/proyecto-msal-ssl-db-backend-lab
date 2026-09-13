@@ -147,3 +147,93 @@
   border-radius: 6px;
   font-weight: 500;
 }
+
+.notification-card {
+  max-width: 450px;
+  margin: 40px auto;
+  padding: 24px;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  font-family: system-ui, -apple-system, sans-serif;
+  background-color: #ffffff;
+}
+
+.notification-title {
+  margin: 0 0 20px 0;
+  font-size: 20px;
+  color: #202124;
+  text-align: center;
+}
+
+.notification-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #5f6368;
+}
+
+.form-input {
+  padding: 10px;
+  font-size: 15px;
+  border-radius: 4px;
+  border: 1px solid #dadce0;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.form-input:focus {
+  border-color: #1a73e8;
+}
+
+.form-button {
+  padding: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #ffffff;
+  background-color: #1a73e8;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.form-button:hover:not(:disabled) {
+  background-color: #1557b0;
+}
+
+.form-button:disabled {
+  background-color: #dadce0;
+  cursor: not-allowed;
+}
+
+.form-alert {
+  margin: top 20px;
+  padding: 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  text-align: center;
+  font-weight: 500;
+}
+
+.form-alert.success {
+  background-color: #e6f4ea;
+  color: #137333;
+}
+
+.form-alert.error {
+  background-color: #fce8e6;
+  color: #c5221f;
+}
+

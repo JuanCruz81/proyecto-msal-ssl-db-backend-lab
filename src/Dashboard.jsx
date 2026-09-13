@@ -8,14 +8,78 @@ import {
 } from './styles';
 import { useMiContexto } from './miContexto';
 import { mapearUsuarioAInteger } from './utils';
+// import styles from './styles';
 
 const usuarioActivo = { username: 'alice' };
+
+const styles = {
+  card: {
+    maxWidth: '450px',
+    margin: '40px auto',
+    padding: '24px',
+    borderRadius: '8px',
+    border: '1px solid #e0e0e0',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+    fontFamily: 'system-ui, sans-serif',
+    backgroundColor: '#ffffff'
+  },
+  title: {
+    margin: '0 0 20px 0',
+    fontSize: '20px',
+    color: '#202124',
+    textAlign: 'center'
+  },
+  form: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '16px'
+  },
+  group: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '6px'
+  },
+  label: {
+    fontSize: '14px',
+    fontWeight: '500',
+    color: '#5f6368',
+    textAlign: 'left'
+  },
+  input: {
+    padding: '10px',
+    fontSize: '15px',
+    borderRadius: '4px',
+    border: '1px solid #dadce0',
+    outline: 'none'
+  },
+  button: {
+    padding: '12px',
+    fontSize: '15px',
+    fontWeight: '600',
+    color: '#fff',
+    backgroundColor: '#1a73e8',
+    border: 'none',
+    borderRadius: '4px',
+    cursor: 'pointer'
+  },
+  alert: {
+    marginTop: '20px',
+    padding: '12px',
+    borderRadius: '4px',
+    fontSize: '14px',
+    textAlign: 'center',
+    fontWeight: '500'
+  }
+};
 
 export default function AsignarRolesVista() {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRoles, setSelectedRoles] = useState({});
   const [coords, setCoords] = useState({ top: 0, left: 0 });
+  const [form, setForm] = useState({ recipients: '', usuarioId: '', roles: '' });
+  const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState({ type: '', message: '' });
 
   const { datosCompartidos } = useMiContexto(); // <-- Usamos el contexto para obtener datos compartidos
 
@@ -23,6 +87,13 @@ export default function AsignarRolesVista() {
   const popupRef = useRef(null);
 
   const API_URL = import.meta.env.VITE_API_URL;
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+
 
   // Calcular la posición física exacta en la pantalla al hacer clic
   const handleToggle = () => {
@@ -134,6 +205,49 @@ export default function AsignarRolesVista() {
     }
 
     setIsOpen(false);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setStatus({ type: '', message: '' });
+
+    const payload = {
+      recipients: form.recipients,
+      embeds: [
+        {
+          title: "🔄 Mensaje de Sistema: Configurado por Usuario",
+          description: "Hola. Has recibido una notificación programada por el administrador de la plataforma...",
+          color: 6202075,
+          fields: [
+            { name: "👤 ID de Usuario Destino", value: `\`${form.usuarioId}\``, inline: true },
+            { name: "🛡️ Roles Afectados", value: `\`${form.roles}\``, inline: true },
+            { name: "⚡ Acciones Requeridas", value: "[🟢 Aprobar](https://tu-backend.com) | [🔴 Cancelar](https://tu-backend.com)" }
+          ],
+          footer: { text: "Mensaje Autogenerado • Configuración de Usuario" },
+          timestamp: new Date().toISOString()
+        }
+      ]
+    };
+
+    try {
+      const response = await fetch('https://localhost:4000/api/v1/test-notification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (response.ok) {
+        setStatus({ type: 'success', message: '¡Notificación enviada correctamente!' });
+        setForm({ recipients: '', usuarioId: '', roles: '' });
+      } else {
+        setStatus({ type: 'error', message: `Error del servidor (${response.status})` });
+      }
+    } catch (error) {
+      setStatus({ type: 'error', message: 'Error de red. Revisa la conexión con el servidor.' });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -279,7 +393,69 @@ export default function AsignarRolesVista() {
         </div>,
         document.body
       )}
+      <div style={styles.card}>
+        <h2 style={styles.title}>Enviar Notificación de Prueba</h2>
 
+        <form onSubmit={handleSubmit} style={styles.form}>
+          {/* Campo: Recipients */}
+          <div style={styles.group}>
+            <label style={styles.label}>Recipients:</label>
+            <input
+              type="text"
+              name="recipients"
+              value={form.recipients}
+              onChange={handleChange}
+              placeholder="Ej: channel-id, user-id o email"
+              required
+              style={styles.input}
+            />
+          </div>
+
+          {/* Campo: Usuario ID */}
+          <div style={styles.group}>
+            <label style={styles.label}>ID de Usuario Destino:</label>
+            <input
+              type="text"
+              name="usuarioId"
+              value={form.usuarioId}
+              onChange={handleChange}
+              placeholder="Ej: USR-9482"
+              required
+              style={styles.input}
+            />
+          </div>
+
+          {/* Campo: Roles */}
+          <div style={styles.group}>
+            <label style={styles.label}>Roles Afectados:</label>
+            <input
+              type="text"
+              name="roles"
+              value={form.roles}
+              onChange={handleChange}
+              placeholder="Ej: Admin, Developer"
+              required
+              style={styles.input}
+            />
+          </div>
+
+          {/* Botón de envío */}
+          <button type="submit" disabled={loading} style={styles.button}>
+            {loading ? 'Enviando...' : 'Enviar al Servidor'}
+          </button>
+        </form>
+
+        {/* Alertas de respuesta */}
+        {status.message && (
+          <div style={{
+            ...styles.alert,
+            backgroundColor: status.type === 'success' ? '#e6f4ea' : '#fce8e6',
+            color: status.type === 'success' ? '#137333' : '#c5221f'
+          }}>
+            {status.message}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

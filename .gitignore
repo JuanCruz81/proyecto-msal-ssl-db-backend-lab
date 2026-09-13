@@ -1,5 +1,2 @@
-server/node_modules/
-node_modules/
-*.pem
-.vs/
-server/database.sqlite
+server/.env
+.env
