@@ -7,6 +7,7 @@ const cors = require('cors')
 const { createClient } = require('@supabase/supabase-js')
 const { Server } = require('socket.io')
 const { notifyDiscord } = require('./botHelper.js')
+const { iniciarSimuladorChat } = require('./simuladorChat.js')
 
 // Especificamos la ruta correcta al archivo .env directamente
 require('dotenv').config({ path: path.resolve(__dirname, '../.env') })
@@ -183,6 +184,7 @@ try {
 
   server.listen(PORT, () => {
     console.log(`Auth backend listening (HTTPS) on port ${PORT}`)
+    iniciarSimuladorChat();
   })
 } catch (e) {
   console.warn('Failed to start HTTPS server, falling back to HTTP:', e.message)
