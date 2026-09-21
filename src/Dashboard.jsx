@@ -77,7 +77,12 @@ export default function AsignarRolesVista() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRoles, setSelectedRoles] = useState({});
   const [coords, setCoords] = useState({ top: 0, left: 0 });
-  const [form, setForm] = useState({ recipients: '', usuarioId: '', roles: '' });
+  const [form, setForm] = useState({
+    recipients: '',
+    usuarioId: '',
+    roles: '',
+    scheduledDate: ''
+  });
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState({ type: '', message: '' });
 
@@ -92,8 +97,6 @@ export default function AsignarRolesVista() {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
-
-
 
   // Calcular la posición física exacta en la pantalla al hacer clic
   const handleToggle = () => {
@@ -222,7 +225,9 @@ export default function AsignarRolesVista() {
           fields: [
             { name: "👤 ID de Usuario Destino", value: `\`${form.usuarioId}\``, inline: true },
             { name: "🛡️ Roles Afectados", value: `\`${form.roles}\``, inline: true },
-            { name: "⚡ Acciones Requeridas", value: "[🟢 Aprobar](https://tu-backend.com) | [🔴 Cancelar](https://tu-backend.com)" }
+            { name: "🛡️ Schedule Date", value: `\`${form.scheduledDate}\``, inline: true },
+            { name: "⚡ Acciones Requeridas", 
+              value: "[🟢 Aprobar](https://tu-backend.com) | [🔴 Cancelar](https://tu-backend.com)" }
           ],
           footer: { text: "Mensaje Autogenerado • Configuración de Usuario" },
           timestamp: new Date().toISOString()
@@ -239,7 +244,12 @@ export default function AsignarRolesVista() {
 
       if (response.ok) {
         setStatus({ type: 'success', message: '¡Notificación enviada correctamente!' });
-        setForm({ recipients: '', usuarioId: '', roles: '' });
+        setForm({
+          recipients: '',
+          usuarioId: '',
+          roles: '',
+          scheduledDate: ''
+        });
       } else {
         setStatus({ type: 'error', message: `Error del servidor (${response.status})` });
       }
@@ -435,6 +445,18 @@ export default function AsignarRolesVista() {
               onChange={handleChange}
               placeholder="Ej: Admin, Developer"
               required
+              style={styles.input}
+            />
+          </div>
+
+          {/* Campo: Scheduled Date (Nuevo) */}
+          <div style={styles.group}>
+            <label style={styles.label}>Fecha y Hora de Programación (Scheduled Date):</label>
+            <input
+              type="datetime-local"
+              name="scheduledDate"
+              value={form.scheduledDate || ''}
+              onChange={handleChange}
               style={styles.input}
             />
           </div>
