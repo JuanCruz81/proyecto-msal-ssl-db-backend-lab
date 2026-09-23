@@ -12,3 +12,9 @@ export const ROLES_SISTEMA = [
   { id: 'role-3', name: 'Ingeniero Principal de QA Automation', usernames: ['bob'] },
   { id: 'role-4', name: 'Coordinador de Arquitectura de Datos', usernames: [] }
 ];
+
+export const objetoOriginal = {
+  item1: { id: "101", nombre: "Producto A" },
+  item2: { id: "102", nombre: "Producto B" },
+  item3: { id: "103", nombre: "Producto C" }
+};
