@@ -9,11 +9,25 @@ const { Server } = require('socket.io')
 const { notifyDiscord } = require('./botHelper.js')
 const { iniciarSimuladorChat } = require('./simuladorChat.js')
 
+// === NUEVA CONFIGURACIÓN DE SQLITE ===
+const sqlite3 = require('sqlite3').verbose()
+const util = require('util')
+
 // Especificamos la ruta correcta al archivo .env directamente
 require('dotenv').config({ path: path.resolve(__dirname, '../.env') })
 
 const app = express()
 const PORT = process.env.PORT || 4000
+
+// Abre la conexión al archivo de tu base de datos
+// (Asegúrate de que la ruta apunte a donde DBeaver guardó tu archivo .db)
+const db = new sqlite3.Database('C:\\Users\\Administrator\\dbeaverConnection\\mibase.db', (err) => {
+  if (err) console.error('Error al conectar a SQLite:', err.message)
+  else console.log('Conectado con éxito a la base de datos de SQLite.')
+})
+
+// Convertimos el método db.all a Promesa para poder usar async/await igual que con Supabase
+const dbAll = util.promisify(db.all).bind(db)
 
 app.use(cors())
 app.use(express.json())
@@ -28,18 +42,34 @@ console.log('Conectado exitosamente al cliente de Supabase')
 let io
 
 // OBTENER TODOS LOS USUARIOS
+// app.get('/api/users', async (req, res) => {
+//   try {
+//     const { data, error } = await supabase
+//       .from('users')
+//       .select('username, name, email')
+
+//     if (error) throw error
+//     res.json(data)
+//   } catch (err) {
+//     res.status(500).json({ error: err.message })
+//   }
+// })
+
+// OBTENER TODOS LOS USUARIOS (Versión SQLite)
 app.get('/api/users', async (req, res) => {
   try {
-    const { data, error } = await supabase
-      .from('users')
-      .select('username, name, email')
+    // Ejecutamos la consulta SQL pura. 
+    // Recuerda que en el comando CREATE TABLE que ejecutamos usamos 'name' e 'email'.
+    const data = await dbAll('SELECT name, email FROM users')
 
-    if (error) throw error
+    // Si la tabla está vacía, SQLite te devolverá un array vacío []
     res.json(data)
   } catch (err) {
+    // Si hay un error en la consulta o en la base de datos, lo captura aquí
     res.status(500).json({ error: err.message })
   }
 })
+
 
 // OBTENER UN USUARIO POR ID
 app.get('/api/users/:id', async (req, res) => {
