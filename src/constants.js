@@ -18,3 +18,70 @@ export const objetoOriginal = {
   item2: { id: "102", nombre: "Producto B" },
   item3: { id: "103", nombre: "Producto C" }
 };
+
+export const styles = {
+  card: {
+    maxWidth: '450px',
+    margin: '40px auto',
+    padding: '24px',
+    borderRadius: '8px',
+    border: '1px solid #e0e0e0',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+    fontFamily: 'system-ui, sans-serif',
+    backgroundColor: '#ffffff'
+  },
+  title: {
+    margin: '0 0 20px 0',
+    fontSize: '20px',
+    color: '#202124',
+    textAlign: 'center'
+  },
+  form: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '16px'
+  },
+  group: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '6px'
+  },
+  label: {
+    fontSize: '14px',
+    fontWeight: '500',
+    color: '#5f6368',
+    textAlign: 'left'
+  },
+  input: {
+    padding: '10px',
+    fontSize: '15px',
+    borderRadius: '4px',
+    border: '1px solid #dadce0',
+    outline: 'none'
+  },
+  button: {
+    padding: '12px',
+    fontSize: '15px',
+    fontWeight: '600',
+    color: '#fff',
+    backgroundColor: '#1a73e8',
+    border: 'none',
+    borderRadius: '4px',
+    cursor: 'pointer'
+  },
+  alert: {
+    marginTop: '20px',
+    padding: '12px',
+    borderRadius: '4px',
+    fontSize: '14px',
+    textAlign: 'center',
+    fontWeight: '500'
+  }
+};
+
+export const objetoOrdenes = {
+  order_001: { id: "1", orderNumber: "ORD-2026-A", queueName: "orders.create.v1", exchange: "amq.direct", routingKey: "order.created", priority: "High" },
+  order_002: { id: "2", orderNumber: "ORD-2026-B", queueName: "orders.ship.v1", exchange: "shipping.topic", routingKey: "order.shipped", priority: "Medium" },
+  order_003: { id: "3", orderNumber: "ORD-2026-C", queueName: "orders.cancel.v1", exchange: "amq.direct", routingKey: "order.cancelled", priority: "Low" }
+};
+
